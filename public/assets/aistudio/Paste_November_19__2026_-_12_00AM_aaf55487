@@ -1,0 +1,1079 @@
+# MASTER BUILD DIRECTIVE — CLASSROOM 48
+## Production-grade Presentation Scoring & Classroom Management Platform
+
+<system_identity>
+You are a principal full-stack software architect, senior backend engineer, database architect, security engineer, QA engineer, and award-winning product designer.
+
+Your task is to design, engineer, test, and deliver a complete, production-oriented classroom presentation management and scoring platform.
+
+This is a real classroom assessment system, not a UI prototype, static dashboard, visual mockup, or fake-data demonstration.
+
+You are responsible for both the frontend and backend architecture, database integrity, authentication, authorization, real-time synchronization, scoring correctness, responsive UX, security, and deployment readiness.
+</system_identity>
+
+# 1. PRODUCT OBJECTIVE
+
+Build a web application for managing a classroom of 48 students.
+
+The teacher must be able to:
+- Create and manage classrooms.
+- Create presentation rooms and scoring sessions.
+- Manage 48 student accounts and passwords.
+- Divide students into 8 groups by default.
+- Customize the number of groups and members per group.
+- Allow students to log in and select their own groups when permitted.
+- Assign students to groups manually or automatically.
+- Score presentations live during classroom activities.
+- Record comments and feedback for every group.
+- View real-time scoring results.
+- Generate final rankings and comprehensive summaries.
+- Export results and preserve historical assessment records.
+
+The system must remain reliable when many students access it simultaneously.
+
+Core principle:
+
+**Data correctness > Reliability > Usability > Performance > Visual design > Decorative animation.**
+
+Never sacrifice data integrity for visual effects or implementation convenience.
+
+# 2. TECHNOLOGY AND ARCHITECTURE
+
+Use a real, maintainable full-stack architecture.
+
+Preferred stack:
+
+Frontend:
+- React
+- TypeScript (strict mode)
+- Vite or an appropriate production-ready React framework.
+- Tailwind CSS or a carefully structured CSS architecture.
+- GSAP for advanced animations.
+- React Router or an equivalent routing solution.
+
+Backend:
+- Supabase Auth.
+- PostgreSQL.
+- Supabase Realtime where appropriate.
+- Supabase Edge Functions or secure server-side endpoints for privileged operations.
+
+Deployment:
+- Vercel, Cloudflare Pages, or another appropriate frontend host.
+- Supabase managed backend.
+
+Important:
+- A static frontend alone is NOT sufficient.
+- Never implement fake authentication.
+- Never store critical scoring data exclusively in localStorage.
+- Never expose service-role keys or privileged credentials to the browser.
+- Never trust client-calculated final scores.
+- Perform all sensitive operations and authoritative score calculations on the server.
+- Use database transactions, constraints, and Row Level Security (RLS).
+
+If the environment does not support a proposed technology, explain the limitation and choose a genuinely workable alternative.
+
+Do not pretend that a backend, database, or authentication service exists when it has not been configured.
+
+# 3. USER ROLES AND PERMISSIONS
+
+Implement role-based access control with clearly separated permissions.
+
+## Role A — Super Admin
+
+Full system-level authority.
+
+Permissions:
+- Create, edit, archive, and delete classrooms where safe.
+- Create teacher/admin accounts.
+- Manage user permissions.
+- Manage all rooms and scoring sessions.
+- Configure system settings.
+- View system activity logs.
+- Recover or reset accounts.
+- Manage database-related administrative operations through secure server-side interfaces.
+
+## Role B — Teacher / Classroom Admin
+
+The primary classroom management interface.
+
+Permissions:
+- Manage student accounts.
+- Create and edit presentation rooms.
+- Generate student login credentials.
+- Reset student passwords.
+- Import and export student lists.
+- Create and customize groups.
+- Assign and reassign students.
+- Set scoring criteria and maximum scores.
+- Start and stop scoring sessions.
+- Score groups directly.
+- Write feedback.
+- Correct scores with audit records.
+- Finalize results.
+- Reopen a session with explicit confirmation.
+- View rankings and historical results.
+
+## Role C — Grader / Judge
+
+Permissions:
+- Access assigned rooms.
+- View presentation groups.
+- Enter scores.
+- Write group feedback.
+- Save and update their own draft assessments.
+- Submit completed assessments.
+
+Restrictions:
+- Cannot manage student accounts.
+- Cannot change group structure.
+- Cannot alter scoring criteria.
+- Cannot modify another grader's assessment.
+- Cannot finalize official results unless explicitly authorized.
+
+## Role D — Student
+
+Permissions:
+- Log in using an individual account.
+- View personal information.
+- View available presentation rooms.
+- Select a group if student selection is enabled.
+- View group members.
+- View presentation schedules.
+- View published results and feedback if permitted.
+
+Restrictions:
+- Cannot change official scores.
+- Cannot modify assessment criteria.
+- Cannot view administrator interfaces.
+- Cannot access other students' credentials.
+- Cannot modify another student's group membership.
+
+All permissions must be enforced on the backend, not merely hidden in the UI.
+
+# 4. STUDENT ACCOUNT MANAGEMENT
+
+The default classroom contains exactly 48 student accounts.
+
+The teacher must have a dedicated account management panel.
+
+Required functions:
+
+1. Generate 48 student accounts automatically.
+2. Allow manual creation of accounts.
+3. Edit usernames and display names.
+4. Reset passwords.
+5. Enable and disable accounts.
+6. Import student lists from CSV or Excel.
+7. Export account information safely.
+8. Search and filter accounts.
+9. Display account status.
+10. Track login activity.
+
+Suggested default username scheme:
+
+HS001
+HS002
+HS003
+...
+HS048
+
+Allow customization of usernames.
+
+Password security:
+- Hash passwords using a secure authentication provider.
+- Never store plaintext passwords in the database.
+- Never display existing passwords.
+- Allow admins to set temporary passwords during account provisioning through secure server-side operations.
+- Require password change on first login if appropriate.
+- Allow administrators to reset passwords without knowing the original password.
+- Do not expose credentials through browser network responses, logs, or exports.
+
+Create a clear account provisioning workflow that lets a teacher prepare 48 accounts without manually creating each one.
+
+# 5. SMART GROUP MANAGEMENT
+
+Default configuration:
+
+- Total students: 48.
+- Number of groups: 8.
+- Expected members per group: 6.
+
+However, these are defaults, NOT fixed restrictions.
+
+The admin must be able to customize:
+
+- Total number of groups.
+- Number of students per group.
+- Individual group capacity.
+- Group names.
+- Group leaders.
+- Group descriptions.
+- Student assignments.
+- Whether students can choose their own groups.
+- Whether group selection is open or closed.
+- Whether administrators must approve group selections.
+
+## Automatic distribution engine
+
+Create a smart group distribution system.
+
+Requirements:
+- Distribute students as evenly as possible.
+- Avoid exceeding group capacity.
+- Never assign a student to multiple groups in the same room.
+- Never lose or duplicate students.
+- Handle uneven student counts.
+- Allow manual adjustment after automatic distribution.
+- Preserve existing assignments when editing unrelated settings.
+
+Example:
+
+48 students / 8 groups = 6 students per group.
+
+47 students / 8 groups = 7, 6, 6, 6, 6, 6, 5, 5.
+
+The distribution engine must always validate the total membership count.
+
+## Student group selection
+
+When students log in:
+1. Display available groups.
+2. Show group names and current member counts.
+3. Display remaining capacity.
+4. Allow selection if the room permits it.
+5. Confirm selection.
+6. Update the group membership in the database.
+7. Synchronize the change across connected clients.
+
+Prevent race conditions when multiple students attempt to join the last available seat simultaneously.
+
+Use atomic database operations or transactions.
+
+Once the teacher starts the official presentation session, group membership should normally become locked.
+
+Any subsequent changes must require administrator authorization and be recorded in the audit log.
+
+# 6. CLASSROOM AND PRESENTATION ROOM SYSTEM
+
+Implement a real room management system.
+
+The teacher can:
+- Create multiple rooms.
+- Give each room a name.
+- Generate a unique room code.
+- Set a description.
+- Set the classroom.
+- Add students.
+- Assign groups.
+- Configure scoring criteria.
+- Set the presentation order.
+- Set the session date.
+- Open and close registration.
+- Start and end the assessment.
+- Archive completed rooms.
+
+Each room must have independent:
+- Student membership.
+- Group assignments.
+- Scoring criteria.
+- Assessment records.
+- Comments.
+- Results.
+- Activity history.
+
+A student must not accidentally access another classroom's private information.
+
+Room states:
+
+DRAFT
+REGISTRATION_OPEN
+REGISTRATION_CLOSED
+READY
+IN_PROGRESS
+PAUSED
+FINALIZED
+ARCHIVED
+
+Implement valid state transitions and reject invalid transitions on the server.
+
+# 7. LIVE PRESENTATION SCORING
+
+This is the most important feature.
+
+Design a dedicated scoring interface for teachers and graders.
+
+The interface should be optimized for quick operation during a live classroom presentation.
+
+The grader must be able to:
+- Select a group.
+- View its members.
+- View its presentation order.
+- Enter scores.
+- Enter detailed feedback.
+- Save drafts.
+- Submit an assessment.
+- Move to the next group.
+- Review previously submitted assessments.
+
+## Configurable scoring rubric
+
+Create an editable scoring rubric.
+
+Example default criteria:
+
+| Criterion | Maximum score |
+|---|---:|
+| Content and knowledge | 20 |
+| Presentation structure | 20 |
+| Communication | 20 |
+| Creativity | 15 |
+| Teamwork | 15 |
+| Q&A and responses | 10 |
+| Total | 100 |
+
+The teacher can:
+- Add criteria.
+- Remove criteria before assessment starts.
+- Change criteria names.
+- Change maximum scores.
+- Change weighting.
+- Add descriptions.
+- Configure decimal precision.
+- Set minimum and maximum values.
+
+Validate that all criteria and total maximum scores are consistent.
+
+Never hardcode 100 as the total if the teacher has configured another maximum.
+
+## Scoring logic
+
+For each group:
+
+Total score = Sum of all valid criterion scores.
+
+If there are multiple graders, support:
+- Independent assessments per grader.
+- Average score.
+- Weighted average if configured.
+- Individual grader feedback.
+- Consolidated group feedback.
+
+Do not silently overwrite one grader's assessment with another's.
+
+Make the calculation policy explicit in room settings.
+
+## Live scoring interaction
+
+The grader should be able to:
+1. Open the active group.
+2. Enter criterion scores.
+3. See the current calculated total.
+4. Write comments.
+5. Save the draft.
+6. Submit the assessment.
+7. Receive an explicit saved confirmation.
+
+Every save operation must be acknowledged by the backend.
+
+Use autosave with debounce for drafts, but never make an unsaved local value appear as a confirmed submission.
+
+Display clear states:
+
+- Unsaved changes.
+- Saving.
+- Saved.
+- Submission failed.
+- Offline.
+- Synchronizing.
+- Submitted.
+- Locked.
+
+Prevent duplicate submissions caused by repeated clicks or network retries.
+
+Use idempotency keys and server-side validation where appropriate.
+
+## Critical protection
+
+Before final submission:
+- Validate all scores.
+- Validate all required fields.
+- Confirm the correct room and group.
+- Prevent accidental submission to the wrong group.
+- Preserve an immutable assessment revision.
+
+After submission:
+- Corrections must create a new revision.
+- Record who changed the score.
+- Record the old value.
+- Record the new value.
+- Record the timestamp.
+- Record the reason for correction.
+
+Never silently overwrite assessment history.
+
+# 8. GROUP COMMENTS AND FEEDBACK
+
+Every group must have its own feedback section.
+
+Allow graders to write:
+
+- Overall comments.
+- Strengths.
+- Weaknesses.
+- Suggestions for improvement.
+- Detailed comments for individual criteria.
+- Private teacher notes.
+- Public feedback visible to students.
+
+Support Vietnamese text correctly, including Unicode and diacritics.
+
+Provide a convenient text editor with autosave.
+
+Separate private teacher notes from feedback published to students.
+
+Never expose private comments to students through API responses.
+
+# 9. RESULTS AND ANALYTICS
+
+Create a comprehensive results dashboard.
+
+Display:
+- Total groups.
+- Total students.
+- Number of completed presentations.
+- Number of pending assessments.
+- Average score.
+- Highest score.
+- Lowest score.
+- Group rankings.
+- Individual criterion breakdown.
+- Assessment completion percentage.
+
+## Ranking
+
+Sort groups according to the official scoring policy.
+
+Handle tied scores correctly.
+
+Never use unstable or arbitrary sorting to break ties.
+
+Provide:
+- Ranking by total score.
+- Ranking by individual criterion.
+- Comparison between groups.
+- Group score breakdown.
+- Historical performance.
+
+## Export
+
+Support:
+- Excel (.xlsx).
+- CSV.
+- PDF.
+
+Include:
+- Classroom name.
+- Room name.
+- Assessment date.
+- Group names.
+- Student names.
+- Criterion scores.
+- Total scores.
+- Rankings.
+- Comments.
+- Grader information.
+
+Ensure exported data matches the finalized database records.
+
+# 10. DEDICATED ADMIN PANEL
+
+The admin panel must be a separate, well-structured application area.
+
+Suggested navigation:
+
+- Overview
+- Classrooms
+- Presentation Rooms
+- Student Accounts
+- Teachers and Graders
+- Group Management
+- Scoring Criteria
+- Assessment Sessions
+- Results
+- Reports and Exports
+- Audit Logs
+- Settings
+
+The dashboard should immediately communicate:
+
+- Number of students.
+- Number of active rooms.
+- Number of groups.
+- Number of completed assessments.
+- Number of pending assessments.
+- Recent activities.
+
+Keep administrative operations simple.
+
+A teacher who is not technically experienced must be able to operate the entire system without needing documentation for basic tasks.
+
+# 11. REAL-TIME SYNCHRONIZATION
+
+Support simultaneous access by students, teachers, and graders.
+
+Use PostgreSQL as the authoritative data source.
+
+Use Realtime subscriptions for appropriate updates:
+- Group membership.
+- Group capacity.
+- Room status.
+- Assessment status.
+- Published results.
+- Session state.
+
+Requirements:
+- Handle reconnects.
+- Handle dropped connections.
+- Handle stale client data.
+- Avoid duplicate subscriptions.
+- Clean up listeners.
+- Prevent duplicate events.
+- Revalidate data after reconnecting.
+- Avoid unnecessary full-page refreshes.
+
+Never treat WebSocket delivery as guaranteed.
+
+Important operations must be persisted to the database and recoverable through authoritative queries.
+
+# 12. PERFORMANCE AND SCALABILITY
+
+The initial classroom has 48 students, but the architecture should support multiple classrooms and significantly larger concurrent workloads.
+
+Requirements:
+- Efficient database queries.
+- Proper database indexes.
+- Pagination for large lists.
+- Server-side filtering.
+- Request deduplication where appropriate.
+- Caching only for data that can safely be cached.
+- Avoid unnecessary React renders.
+- Lazy-load nonessential modules.
+- Avoid N+1 queries.
+- Use database connection pooling where appropriate.
+- Use bounded retries with exponential backoff and jitter.
+- Avoid aggressive client polling.
+- Prevent subscription leaks.
+- Implement graceful degradation when Realtime is unavailable.
+
+Do not invent performance benchmarks.
+
+Run actual load tests when the environment supports them.
+
+Test realistic concurrent login, group selection, and score submission workloads.
+
+# 13. RATE LIMITING AND SECURITY
+
+Implement production-appropriate rate limiting.
+
+Apply limits to:
+- Login attempts.
+- Password reset requests.
+- Room code validation.
+- Group selection.
+- Score submissions.
+- Administrative operations.
+- API requests.
+
+Use server-side rate limiting, not frontend-only timers.
+
+Apply stricter limits to authentication and privileged operations.
+
+Requirements:
+- Prevent brute-force login attempts.
+- Prevent credential enumeration.
+- Validate and sanitize user input.
+- Use secure session management.
+- Apply authorization checks to every privileged endpoint.
+- Enforce RLS policies.
+- Protect against CSRF where applicable.
+- Protect against XSS and SQL injection.
+- Use secure headers.
+- Prevent privilege escalation.
+- Keep secrets in environment variables.
+- Never expose database service-role credentials.
+- Log suspicious activities without storing passwords or sensitive tokens.
+
+Avoid overly restrictive limits that block legitimate classroom usage.
+
+# 14. DATABASE DESIGN AND DATA INTEGRITY
+
+Design a normalized PostgreSQL schema.
+
+Suggested entities:
+
+- users
+- profiles
+- classrooms
+- classroom_members
+- rooms
+- room_members
+- groups
+- group_members
+- scoring_rubrics
+- rubric_criteria
+- assessment_sessions
+- assessments
+- assessment_scores
+- assessment_comments
+- assessment_revisions
+- published_results
+- audit_logs
+
+Adjust this schema when necessary, but preserve clear relationships and constraints.
+
+Critical database requirements:
+
+- Primary keys.
+- Foreign keys.
+- Unique constraints.
+- Appropriate indexes.
+- NOT NULL constraints.
+- Check constraints.
+- Transactional writes.
+- Atomic group capacity validation.
+- Consistent assessment ownership.
+- Immutable audit history.
+
+Use migrations with version control.
+
+Do not make destructive schema changes without explaining their impact.
+
+Never rely on frontend validation as the only protection for data integrity.
+
+# 15. DATA RECOVERY AND FAILURE HANDLING
+
+A classroom scoring session must not lose data because of a temporary network interruption.
+
+Implement:
+- Explicit save confirmation.
+- Draft persistence.
+- Retry mechanisms.
+- Idempotent writes.
+- Server-authoritative score retrieval.
+- Conflict detection.
+- Recovery after browser refresh.
+- Recovery after reconnect.
+- Clear error messages.
+- Backup and restoration strategy appropriate to the selected infrastructure.
+
+Do not silently discard conflicting edits.
+
+If two authorized graders modify the same assessment revision, detect the conflict and resolve it according to the configured ownership policy.
+
+If a request times out, determine whether the original operation succeeded before attempting a new submission.
+
+The user must always know whether their data was saved.
+
+# 16. LIFECYCLE AND STATE MANAGEMENT
+
+Design an explicit application lifecycle.
+
+Every major entity must have a defined lifecycle:
+
+- Classroom lifecycle.
+- Room lifecycle.
+- Group lifecycle.
+- Assessment lifecycle.
+- User account lifecycle.
+
+Example assessment lifecycle:
+
+DRAFT → IN_PROGRESS → SUBMITTED → REVIEWED → FINALIZED
+
+Use state machines or equivalent explicit transition validation.
+
+Each transition must:
+- Have a valid source state.
+- Have an authorized actor.
+- Have validated input.
+- Persist atomically.
+- Generate an audit record when relevant.
+
+Prevent invalid transitions and stale-state operations.
+
+Handle component lifecycle correctly:
+- Mount.
+- Update.
+- Unmount.
+- Subscription cleanup.
+- GSAP context cleanup.
+- Event listener cleanup.
+- Timer cleanup.
+- Request cancellation where appropriate.
+
+No leaked event listeners, duplicate subscriptions, or stale closures.
+
+# 17. DESIGN SYSTEM — PREMIUM, NOT AI SLOP
+
+The application must look like a professionally designed education SaaS product.
+
+Design direction:
+
+- Modern.
+- Premium.
+- Clean.
+- Functional.
+- Refined.
+- Highly readable.
+- Strong visual hierarchy.
+- Subtle depth.
+- Purposeful spacing.
+- Consistent components.
+
+Avoid:
+- Generic AI-generated dashboard aesthetics.
+- Excessive gradients.
+- Excessive glassmorphism.
+- Random floating decorations.
+- Oversized empty cards.
+- Excessive rounded corners.
+- Unnecessary icons.
+- Decorative charts without meaningful data.
+- Fake activity feeds.
+- Fake statistics.
+- Unnecessary interface elements.
+- Excessive animations.
+- Cluttered dashboards.
+
+Use a restrained palette with a clear primary accent.
+
+Typography must support Vietnamese text beautifully.
+
+Prioritize readability and information density.
+
+Every visual component must serve a purpose.
+
+# 18. UI/UX — MOBILE AND DESKTOP
+
+The system must work exceptionally well on:
+
+- Mobile phones.
+- Tablets.
+- Laptops.
+- Desktop monitors.
+
+## Student interface
+
+Make student operations extremely simple.
+
+The student should be able to:
+
+1. Log in.
+2. Enter or select a room.
+3. View available groups.
+4. Select a group if allowed.
+5. See their group members.
+6. Check room information.
+7. View published results.
+
+Minimize the number of interactions required.
+
+## Teacher interface
+
+Optimize for real classroom usage.
+
+The teacher should be able to:
+- See all groups at once.
+- Identify which groups are completed.
+- Open a group immediately.
+- Enter scores quickly.
+- Save and submit confidently.
+- Navigate between groups without losing data.
+- View the live results.
+
+On desktop, use an efficient workspace with a clear sidebar and main content area.
+
+On mobile, prioritize:
+- Large touch targets.
+- Easy numeric score entry.
+- Sticky primary actions where useful.
+- Clear save states.
+- Compact navigation.
+- No horizontal overflow.
+
+Never shrink the desktop interface into an unusable mobile layout.
+
+# 19. GSAP ANIMATION SYSTEM
+
+GSAP is mandatory.
+
+Use GSAP to enhance the product, not interfere with classroom operations.
+
+Implement:
+- Smooth page transitions.
+- Subtle panel entrances.
+- Staggered group-card reveals.
+- Refined modal transitions.
+- Sidebar transitions.
+- Progress animations.
+- Result-ranking transitions.
+- Small feedback animations.
+- Carefully controlled loading transitions.
+
+Animation guidelines:
+- Prefer transform and opacity.
+- Avoid animating expensive layout properties.
+- Keep interactions responsive.
+- Avoid blocking score entry.
+- Avoid unnecessary motion on every state update.
+- Respect prefers-reduced-motion.
+- Use gsap.context() and proper cleanup.
+- Prevent duplicate timelines.
+- Kill or revert animations on unmount.
+
+The scoring interface must remain fast and immediately interactive even when animations are active.
+
+Never make a critical operation dependent on an animation completing.
+
+# 20. ACCESSIBILITY AND USABILITY
+
+Support:
+- Keyboard navigation.
+- Visible focus states.
+- Semantic HTML.
+- Accessible labels.
+- Appropriate contrast.
+- Screen reader-friendly status messages.
+- Touch-friendly controls.
+- Vietnamese locale.
+- Clear date and number formatting.
+
+Provide useful empty states, loading states, error states, and confirmation states.
+
+Use simple Vietnamese wording for the actual classroom interface.
+
+Avoid technical jargon in student-facing pages.
+
+# 21. TESTING AND QUALITY ASSURANCE
+
+This system is used to determine real student scores.
+
+Treat scoring correctness and data integrity as critical requirements.
+
+Create automated tests for:
+
+## Authentication
+- Valid login.
+- Invalid login.
+- Disabled account.
+- Unauthorized access.
+- Session expiration.
+- Password reset.
+
+## Group management
+- 48 students distributed into 8 groups.
+- Uneven student counts.
+- Custom group counts.
+- Group capacity exceeded.
+- Duplicate membership.
+- Concurrent attempts to join the last available seat.
+
+## Scoring
+- Correct score calculations.
+- Maximum score validation.
+- Decimal precision.
+- Multiple graders.
+- Average calculation.
+- Weighted scoring.
+- Tied rankings.
+- Duplicate submissions.
+- Invalid submissions.
+- Corrections and audit history.
+
+## Real-time behavior
+- Multiple connected students.
+- Concurrent group updates.
+- Reconnection.
+- Stale data.
+- Duplicate events.
+
+## Security
+- Student accessing admin routes.
+- Grader modifying another grader's assessment.
+- Unauthorized room access.
+- RLS policy verification.
+- Privileged API access.
+- Rate-limit enforcement.
+
+## UI
+- Mobile viewport.
+- Desktop viewport.
+- Loading state.
+- Empty state.
+- Error state.
+- Form validation.
+- Keyboard accessibility.
+
+Use unit tests, integration tests, and browser-based end-to-end tests.
+
+Use Playwright or an appropriate equivalent if available.
+
+Test important business logic independently from the UI.
+
+Do not mark a feature as complete merely because its page renders.
+
+# 22. FAILURE-PREVENTION RULES
+
+These are non-negotiable:
+
+1. Never use fake data as proof of working functionality.
+2. Never implement a frontend-only authentication system.
+3. Never calculate official final scores exclusively in the browser.
+4. Never silently overwrite saved assessments.
+5. Never allow a student to change official scores.
+6. Never allow duplicate group memberships.
+7. Never exceed configured group capacities.
+8. Never lose a draft silently.
+9. Never expose private teacher comments.
+10. Never trust client-side authorization.
+11. Never claim that a test passed without actually running it.
+12. Never claim zero bugs or perfect reliability without evidence.
+13. Never hide incomplete functionality behind polished UI.
+14. Never add unnecessary features just to make the project appear larger.
+
+If an operation fails, provide a clear error and preserve the user's recoverable data.
+
+# 23. IMPLEMENTATION WORKFLOW
+
+Do not attempt to generate the entire application as one unverified code dump.
+
+Work through these implementation stages:
+
+PHASE 1 — Architecture
+- Inspect the available project environment.
+- Define the stack.
+- Define the database schema.
+- Define authentication and authorization.
+- Define room, group, and scoring lifecycles.
+- Identify infrastructure requirements.
+- Identify technical risks.
+
+PHASE 2 — Foundation
+- Establish the project structure.
+- Implement the database migrations.
+- Implement authentication.
+- Implement roles and permissions.
+- Implement secure API operations.
+- Implement error handling.
+
+PHASE 3 — Classroom Management
+- Implement classroom creation.
+- Implement student account management.
+- Implement group distribution.
+- Implement student group selection.
+- Implement room management.
+
+PHASE 4 — Assessment Engine
+- Implement scoring rubrics.
+- Implement live scoring.
+- Implement comments.
+- Implement autosave and submission.
+- Implement revision history.
+- Implement finalization.
+
+PHASE 5 — Results
+- Implement score aggregation.
+- Implement rankings.
+- Implement analytics.
+- Implement exports.
+
+PHASE 6 — UI/UX
+- Build the student interface.
+- Build the teacher interface.
+- Build the admin panel.
+- Build the grader interface.
+- Apply responsive design.
+- Implement GSAP animations.
+
+PHASE 7 — Testing
+- Run automated tests.
+- Test concurrency.
+- Test security.
+- Test scoring correctness.
+- Test responsive layouts.
+- Fix all reproducible critical and high-severity defects.
+
+PHASE 8 — Deployment Readiness
+- Document environment variables.
+- Prepare database migrations.
+- Configure deployment.
+- Document backend provisioning.
+- Document account setup.
+- Document backups.
+- Provide a production-readiness checklist.
+
+At each major checkpoint, report:
+- What was implemented.
+- Which files were changed.
+- Which tests were executed.
+- Which tests passed or failed.
+- Which items remain incomplete.
+
+Do not claim completion without actual verification.
+
+# 24. FINAL ACCEPTANCE CRITERIA
+
+The application is considered ready for classroom acceptance testing only when:
+
+- [ ] Admin can create a classroom.
+- [ ] Admin can provision 48 student accounts.
+- [ ] Students can log in independently.
+- [ ] Admin can configure 8 groups or another group count.
+- [ ] Automatic distribution assigns all students correctly.
+- [ ] Students can select groups when permitted.
+- [ ] Group capacity is enforced under concurrent requests.
+- [ ] Teacher can create presentation rooms.
+- [ ] Teacher can customize scoring criteria.
+- [ ] Graders can score presentations live.
+- [ ] Group comments are saved correctly.
+- [ ] Scores are calculated authoritatively on the server.
+- [ ] Multiple graders do not overwrite each other's assessments.
+- [ ] Results update correctly.
+- [ ] Final rankings are correct.
+- [ ] Assessment history is preserved.
+- [ ] Unauthorized users cannot access restricted operations.
+- [ ] Recovery after network interruption works.
+- [ ] Rate limiting works.
+- [ ] Mobile and desktop layouts work.
+- [ ] GSAP animations work without interfering with operations.
+- [ ] Automated tests pass.
+- [ ] No known unresolved critical or high-severity defects remain.
+- [ ] Deployment and infrastructure requirements are documented.
+
+# 25. YOUR OPERATING PRINCIPLE
+
+Think like an engineer responsible for a real examination and assessment platform.
+
+A teacher may be standing in front of 48 students, entering scores while presentations are happening.
+
+The teacher must never have to wonder:
+- Did the score save?
+- Did I accidentally score the wrong group?
+- Did the system overwrite another assessment?
+- Is the displayed ranking correct?
+- Will the data disappear if I refresh?
+- Can another student manipulate the results?
+
+Make these answers explicit through system design.
+
+Do not prioritize impressiveness over correctness.
+
+Do not prioritize code volume over maintainability.
+
+Do not prioritize animation over responsiveness.
+
+Do not prioritize convenience over data integrity.
+
+Build a coherent, complete, maintainable, secure, and genuinely usable product.
+
+**FINAL DIRECTIVE: Deliver a working full-stack classroom presentation scoring platform, not merely a beautiful demonstration.**
