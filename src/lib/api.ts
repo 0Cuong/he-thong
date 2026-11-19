@@ -1,5 +1,5 @@
 const AUTH_TOKEN_KEY = 'c48_auth_token';
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\\/$/, '');
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 function apiUrl(url: string): string { return url.startsWith('http') ? url : `${API_BASE}${url}`; }
 
 export function getAuthToken(): string | null {
