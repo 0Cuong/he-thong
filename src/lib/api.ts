@@ -1,4 +1,6 @@
 const AUTH_TOKEN_KEY = 'c48_auth_token';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\\/$/, '');
+function apiUrl(url: string): string { return url.startsWith('http') ? url : `${API_BASE}${url}`; }
 
 export function getAuthToken(): string | null {
   try {
@@ -41,7 +43,7 @@ export async function apiFetch<T = any>(
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const token = getAuthToken();
-      const res = await fetch(url, {
+      const res = await fetch(apiUrl(url), {
         ...rest,
         credentials: 'same-origin',
         headers: {
