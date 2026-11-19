@@ -12,7 +12,22 @@ export function createApp(db: DB, realtime: RealtimeHub) {
 
   app.set('trust proxy', 1);
 
-  // Allow the configured Vercel frontend to call the API cross-origin.\n  const allowedOrigin = process.env.FRONTEND_URL;\n  app.use((req, res, next) => {\n    const origin = req.headers.origin;\n    if (origin && allowedOrigin && origin === allowedOrigin) {\n      res.setHeader('Access-Control-Allow-Origin', origin);\n      res.setHeader('Access-Control-Allow-Credentials', 'true');\n      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');\n      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');\n      res.setHeader('Vary', 'Origin');\n    }\n    if (req.method === 'OPTIONS') return res.sendStatus(204);\n    next();\n  });\n\n  // Security headers
+  // Allow the configured Vercel frontend to call the API cross-origin.
+  const allowedOrigin = process.env.FRONTEND_URL;
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && allowedOrigin && origin === allowedOrigin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      res.setHeader('Vary', 'Origin');
+    }
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    next();
+  });
+
+  // Security headers
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
