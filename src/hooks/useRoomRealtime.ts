@@ -35,10 +35,11 @@ export function useRoomRealtime(
       if (disposed) return;
       setConnectionState('connecting');
 
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const base = (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(/\\/$/, '');
+      const wsBase = base.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
       const token = getAuthToken();
       const qs = token ? `?token=${encodeURIComponent(token)}` : '';
-      ws = new WebSocket(`${protocol}//${window.location.host}/ws${qs}`);
+      ws = new WebSocket(`${wsBase}/ws${qs}`);
 
       ws.onopen = () => {
         if (disposed) return;
