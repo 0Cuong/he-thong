@@ -35,7 +35,7 @@ export function useRoomRealtime(
       if (disposed) return;
       setConnectionState('connecting');
 
-      const base = (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(/\\/$/, '');
+      const base = (import.meta.env.VITE_API_BASE_URL || window.location.origin).replace(/\/$/, '');
       const wsBase = base.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
       const token = getAuthToken();
       const qs = token ? `?token=${encodeURIComponent(token)}` : '';
